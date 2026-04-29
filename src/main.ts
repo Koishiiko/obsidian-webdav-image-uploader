@@ -143,36 +143,57 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 			return;
 		}
 
-		let file: File | undefined;
+		let fileList: FileList | undefined;
 		if (e.type === "paste") {
-			file = (e as ClipboardEvent).clipboardData?.files[0];
+			fileList = (e as ClipboardEvent).clipboardData?.files;
 		} else if (e.type === "drop") {
-			file = (e as DragEvent).dataTransfer?.files[0];
+			fileList = (e as DragEvent).dataTransfer?.files;
 		}
 
-		if (file == null) {
-			return;
-		}
+		const files = Array.from(fileList ?? []).filter(
+			(f) => !this.isExcludeFile(f.name),
+		);
 
-		if (this.isExcludeFile(file.name)) {
+		if (files.length === 0) {
 			return;
 		}
 
 		e.preventDefault();
 
-		const notice = new Notice(`Uploading file: '${file.name}'...`, 0);
-		try {
-			const activeFile = this.app.workspace.getActiveFile()!;
-			const link = createLink(this, file);
+		const activeFile = this.app.workspace.getActiveFile()!;
+		const isBatch = files.length > 1;
+		const notice = isBatch
+			? new Notice(`Uploading ${files.length} files... (0/${files.length})`, 0)
+			: new Notice(`Uploading file: '${files[0].name}'...`, 0);
 
-			const fileInfo = await link.upload(activeFile);
+		const markdownLinks: string[] = [];
+		const errors: string[] = [];
 
-			editor.replaceSelection(fileInfo.markdownLink);
-		} catch (e) {
-			noticeError(`Failed to upload file: '${file.name}', ${e}`);
+		for (let i = 0; i < files.length; i++) {
+			const file = files[i];
+			if (isBatch) {
+				notice.setMessage(
+					`Uploading ${files.length} files... (${i + 1}/${files.length})`,
+				);
+			}
+			try {
+				const link = createLink(this, file);
+				const fileInfo = await link.upload(activeFile);
+				markdownLinks.push(fileInfo.markdownLink);
+			} catch (err) {
+				errors.push(`'${file.name}': ${err}`);
+			}
 		}
 
 		notice.hide();
+
+		if (markdownLinks.length > 0) {
+			editor.replaceSelection(markdownLinks.join("\n"));
+		}
+
+		for (const msg of errors) {
+			noticeError(`Failed to upload file ${msg}`);
+		}
 	}
 
 	onRightClickLink(menu: Menu, editor: Editor) {
