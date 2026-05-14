@@ -37,8 +37,8 @@ export class RenameModal extends Modal {
 		const inputEl = this.contentEl.createEl("input", {
 			type: "text",
 			value: path,
+			cls: "webdav-rename-input",
 		});
-		inputEl.style.width = "100%";
 		inputEl.onchange = (e) =>
 			(newPath = (e.target as HTMLInputElement).value);
 

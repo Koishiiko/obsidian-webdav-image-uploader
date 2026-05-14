@@ -20,7 +20,7 @@ const factory: LinkFactory = {
 export default factory;
 
 export class PdfLink<T extends LinkData> extends AttachmentLink<T> {
-	dummyFile?: TFile | null;
+	dummyFile: TFile | null = null;
 
 	// null if not initialized yet
 	isDummyPdf?: boolean;
@@ -108,7 +108,7 @@ export class PdfLink<T extends LinkData> extends AttachmentLink<T> {
 		}
 
 		if (this.isDummyPdf && this.dummyFile != null) {
-			this.plugin.app.vault.delete(this.dummyFile);
+			await this.plugin.app.fileManager.trashFile(this.dummyFile);
 		}
 
 		if (!this.plugin.settings.enableDummyPdf) {
@@ -136,7 +136,7 @@ export class PdfLink<T extends LinkData> extends AttachmentLink<T> {
 		}
 
 		return {
-			fileName: fileInfo.fileName!,
+			fileName: fileInfo.fileName ?? "",
 			url: fileInfo.url,
 			markdownLink: link,
 		};
@@ -150,7 +150,7 @@ export class PdfLink<T extends LinkData> extends AttachmentLink<T> {
 		}
 
 		if (this.dummyFile != null) {
-			this.plugin.app.vault.delete(this.dummyFile);
+			await this.plugin.app.fileManager.trashFile(this.dummyFile);
 		}
 
 		const file = await super.download(note);
@@ -186,7 +186,7 @@ export class PdfLink<T extends LinkData> extends AttachmentLink<T> {
 		await super.delete(note);
 
 		if (this.dummyFile != null) {
-			this.plugin.app.vault.delete(this.dummyFile);
+			await this.plugin.app.fileManager.trashFile(this.dummyFile);
 		}
 	}
 }

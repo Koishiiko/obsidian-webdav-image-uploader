@@ -28,7 +28,7 @@ class WebDavImageLoaderExtension implements PluginValue {
 		this.initMutationObserver(view);
 	}
 
-	update(update: ViewUpdate): void {
+	update(_update: ViewUpdate): void {
 		// update() is called very often and it is hard to know when the page is rendered completely,
 		// so I think using `MutationObserver` is a better choice
 	}
@@ -37,7 +37,7 @@ class WebDavImageLoaderExtension implements PluginValue {
 		this.mutationObserver.disconnect();
 
 		this.images.forEach((el) => {
-			this.plugin.loader.revokeImage(el);
+			void this.plugin.loader.revokeImage(el);
 		});
 		this.images.clear();
 	}
@@ -51,8 +51,8 @@ class WebDavImageLoaderExtension implements PluginValue {
 				}
 
 				mutation.addedNodes.forEach((node) => {
-					if (node instanceof HTMLImageElement) {
-						this.loadImage(node);
+					if (node.nodeName === "IMG") {
+						void this.loadImage(node as HTMLImageElement);
 					}
 				});
 			}
@@ -101,7 +101,7 @@ export class WebDavImageLoader {
 		}
 
 		// add loading animation
-		const isDarkMode = document.body.hasClass("theme-dark");
+		const isDarkMode = activeDocument.body.hasClass("theme-dark");
 		el.src = isDarkMode ? loadingDark : loadingLight;
 
 		// fetch the image with username and password
@@ -156,6 +156,6 @@ export class WebDavImageLoader {
 
 export function createWebDavImageExtension(plugin: WebDavImageUploaderPlugin) {
 	return ViewPlugin.define(
-		(view) => new WebDavImageLoaderExtension(view, plugin)
+		(view) => new WebDavImageLoaderExtension(view, plugin),
 	);
 }

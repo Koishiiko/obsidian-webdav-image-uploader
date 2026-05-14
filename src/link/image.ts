@@ -8,12 +8,12 @@ const factory: LinkFactory = {
 	create<T extends LinkData>(
 		plugin: WebDavImageUploaderPlugin,
 		type: FileType,
-		data: T
+		data: T,
 	) {
 		if (type !== "image") {
 			return null;
 		}
-		return new ImageLink<T>(plugin, data);
+		return new ImageLink(plugin, data);
 	},
 };
 export default factory;
@@ -26,7 +26,7 @@ export class ImageLink<T extends LinkData> extends AttachmentLink<T> {
 	async upload(note: TFile) {
 		const uploadInfo = await super.upload(note);
 		return {
-			fileName: uploadInfo.fileName!,
+			fileName: uploadInfo.fileName ?? "",
 			url: uploadInfo.url,
 			markdownLink: `![${uploadInfo.fileName}](${uploadInfo.url})`,
 		};

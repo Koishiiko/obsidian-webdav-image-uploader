@@ -68,9 +68,12 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 		// and trigger `url-menu` event instead
 		if (Platform.isMobile) {
 			this.registerEvent(
-				this.app.workspace.on("url-menu", (menu) =>
-					this.onRightClickLink(menu, getCurrentEditor(this.app)!),
-				),
+				this.app.workspace.on("url-menu", (menu) => {
+					const editor = getCurrentEditor(this.app);
+					if (editor) {
+						this.onRightClickLink(menu, editor);
+					}
+				}),
 			);
 		}
 
@@ -79,15 +82,16 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 				// obsidian is not trigger `editor-menu` event on mobile platform,
 				// and only trigger `link-context-menu` event
 				if (Platform.isMobile && source === "link-context-menu") {
-					return this.onRightClickLink(
-						menu,
-						getCurrentEditor(this.app)!,
-					);
+					const editor = getCurrentEditor(this.app);
+					if (editor) {
+						return this.onRightClickLink(menu, editor);
+					}
+					return;
 				}
 
 				// register right click menu items in file explorer
 				if (source === "file-explorer-context-menu") {
-					this.onRightClickExplorer(menu, file);
+					void this.onRightClickExplorer(menu, file);
 				}
 			}),
 		);
@@ -96,11 +100,6 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 		if (!this.settings.disableBasicAuth) {
 			this.registerEditorExtension(createWebDavImageExtension(this));
 		}
-
-		console.log(
-			"WebDAV Image Uploader loaded, version:",
-			this.manifest.version,
-		);
 	}
 
 	onunload() {
@@ -163,7 +162,10 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 		const activeFile = this.app.workspace.getActiveFile()!;
 		const isBatch = files.length > 1;
 		const notice = isBatch
-			? new Notice(`Uploading ${files.length} files... (0/${files.length})`, 0)
+			? new Notice(
+					`Uploading ${files.length} files... (0/${files.length})`,
+					0,
+				)
 			: new Notice(`Uploading file: '${files[0].name}'...`, 0);
 
 		const markdownLinks: string[] = [];
@@ -215,23 +217,27 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 				item
 					.setTitle("Download file from WebDAV")
 					.setIcon("arrow-down-from-line")
-					.onClick(() =>
-						this.onDownloadFile(lineNumber, link, editor),
-					),
+					.onClick(() => {
+						void this.onDownloadFile(lineNumber, link, editor);
+					}),
 			);
 
 			menu.addItem((item) =>
 				item
 					.setTitle("Delete file from WebDAV")
 					.setIcon("trash")
-					.onClick(() => this.onDeleteFile(lineNumber, link, editor)),
+					.onClick(() => {
+						void this.onDeleteFile(lineNumber, link, editor);
+					}),
 			);
 
 			menu.addItem((item) =>
 				item
 					.setTitle("Rename file from WebDAV")
 					.setIcon("pencil-line")
-					.onClick(() => this.onRenameFile(lineNumber, link, editor)),
+					.onClick(() => {
+						void this.onRenameFile(lineNumber, link, editor);
+					}),
 			);
 		}
 
@@ -240,9 +246,9 @@ export default class WebDavImageUploaderPlugin extends Plugin {
 				item
 					.setTitle("Upload file to WebDAV")
 					.setIcon("arrow-up-from-line")
-					.onClick(() =>
-						this.onUploadLocalFile(lineNumber, link, editor),
-					),
+					.onClick(() => {
+						void this.onUploadLocalFile(lineNumber, link, editor);
+					}),
 			);
 		}
 	}

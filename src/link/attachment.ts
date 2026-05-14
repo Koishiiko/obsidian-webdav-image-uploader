@@ -16,7 +16,7 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 
 	linkType: "local" | "external";
 
-	tFile: TFile | null;
+	tFile: TFile | null = null;
 
 	constructor(plugin: WebDavImageUploaderPlugin, data: T) {
 		this.plugin = plugin;
@@ -68,7 +68,7 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 
 		if (this.data.path == null) {
 			throw new Error(
-				`Path is undefined for link with name '${this.data.name}'`
+				`Path is undefined for link with name '${this.data.name}'`,
 			);
 		}
 
@@ -85,7 +85,7 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 			throw new Error(
 				`Cannot upload '${
 					this.data instanceof File ? this.data.name : this.data.path
-				}'`
+				}'`,
 			);
 		}
 
@@ -118,12 +118,12 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 
 		this.tFile = await this.plugin.client.downloadFile(
 			(this.data as LinkInfo).path,
-			note.path
+			note.path,
 		);
 
 		const markdownLink = this.plugin.app.fileManager.generateMarkdownLink(
 			this.tFile,
-			this.tFile.path
+			this.tFile.path,
 		);
 
 		return {
@@ -132,13 +132,13 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 		};
 	}
 
-	async rename(note: TFile, newPath: string): Promise<string> {
+	async rename(_note: TFile, newPath: string): Promise<string> {
 		if (!this.downloadable()) {
 			throw new Error("File can not be renamed.");
 		}
 
 		const oldPath = this.plugin.client.getPath(
-			(this.data as LinkInfo).path
+			(this.data as LinkInfo).path,
 		);
 
 		await this.plugin.client.renameFile(oldPath, newPath);
@@ -146,7 +146,7 @@ export class AttachmentLink<T extends LinkData> implements Link<T> {
 		return this.plugin.client.getUrl(newPath);
 	}
 
-	async delete(note: TFile) {
+	async delete(_note: TFile) {
 		if (!this.downloadable()) {
 			throw new Error("File is not deletable");
 		}

@@ -79,7 +79,7 @@ export class BatchUploader {
 
 		notice.hide();
 
-		this.deleteUploadedFiles();
+		await this.deleteUploadedFiles();
 	}
 
 	async uploadAttachments(folder: TFolder) {
@@ -114,7 +114,7 @@ export class BatchUploader {
 
 		notice.hide();
 
-		this.deleteUploadedFiles();
+		await this.deleteUploadedFiles();
 	}
 
 	async uploadNoteFiles(
@@ -161,7 +161,7 @@ export class BatchUploader {
 						`Uploading '${tFile.path}'\n${count}/${total}...`,
 					);
 
-					const link = createLink(this.plugin, linkInfo)!;
+					const link = createLink(this.plugin, linkInfo);
 					fileInfo = await link.upload(note);
 				}
 
@@ -198,7 +198,7 @@ export class BatchUploader {
 		notice.hide();
 
 		if (deleteAfterUpload) {
-			this.deleteUploadedFiles();
+			await this.deleteUploadedFiles();
 		}
 	}
 
@@ -433,11 +433,11 @@ export async function createBatchLog(
 
 	let file = getFileByPath(app, logPath);
 	if (file != null) {
-		app.vault.modify(file, content);
+		await app.vault.modify(file, content);
 	} else {
 		file = await app.vault.create(logPath, content);
 	}
 
-	app.workspace.getLeaf(true).openFile(file);
+	await app.workspace.getLeaf(true).openFile(file);
 	return file;
 }

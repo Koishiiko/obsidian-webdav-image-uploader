@@ -298,7 +298,7 @@ class WebDavClientInner {
 
 		const requestOptions: RequestUrlParam = {
 			url,
-			method: method as any,
+			method,
 			headers: {
 				Authorization: this.authHeader,
 				...headers,

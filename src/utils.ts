@@ -10,7 +10,7 @@ import {
 // replace {{ key }} and {{ key:format }} with variables
 export function formatPath(
 	path: string,
-	variables: ReturnType<typeof getFormatVariables>
+	variables: ReturnType<typeof getFormatVariables>,
 ) {
 	const regex = /\{\{\s*(\w+)(?::([^}]+))?\s*\}\}/g;
 	const result = path.replace(regex, (match, key, format) => {
@@ -64,7 +64,7 @@ export function replaceLink(
 	editor: Editor,
 	lineNumber: number,
 	link: LinkInfo,
-	newLink?: string
+	newLink?: string,
 ) {
 	const line = editor.getLine(lineNumber);
 	const newLine =
@@ -86,7 +86,7 @@ export function getSelectedLink(editor: Editor) {
 	const line = editor.getLine(cursor.line);
 	const links = matchLinks(line);
 	return links.find(
-		(link) => link.start <= cursor.ch && link.end >= cursor.ch
+		(link) => link.start <= cursor.ch && link.end >= cursor.ch,
 	);
 }
 
@@ -111,8 +111,8 @@ export function matchLinks(content: string): LinkInfo[] {
 				}
 
 				return {
-					start: match.index!,
-					end: match.index! + match[0].length,
+					start: match.index ?? 0,
+					end: (match.index ?? 0) + match[0].length,
 					raw: match[0],
 					name: name,
 					path: path,
@@ -135,13 +135,15 @@ export function isLocalPath(path: string) {
 	return !path.startsWith("http://") && !path.startsWith("https://");
 }
 
-export function noticeError(message: string, ...args: any[]) {
+export function noticeError(message: string, ...args: unknown[]) {
 	console.error(message, ...args);
 	new Notice(message, 5000);
 }
 
 export function getToken(username?: string, password?: string) {
-	return btoa(unescape(encodeURIComponent(`${username}:${password}`)));
+	const bytes = new TextEncoder().encode(`${username}:${password}`);
+	const binString = String.fromCharCode(...bytes);
+	return btoa(binString);
 }
 
 export function getCurrentEditor(app: App) {

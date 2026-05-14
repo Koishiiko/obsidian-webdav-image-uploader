@@ -8,7 +8,7 @@ export interface ConfirmModalSettings {
 export class ConfirmModal extends Modal {
 	settings: ConfirmModalSettings;
 
-	onSubmit?: () => void;
+	onSubmit?: () => void | Promise<void>;
 	onCancel?: () => void;
 
 	constructor(app: App, settings: ConfirmModalSettings) {
@@ -34,7 +34,7 @@ export class ConfirmModal extends Modal {
 					if (this.onCancel) {
 						this.onCancel();
 					}
-				})
+				}),
 			)
 			.addButton((btn) =>
 				btn
@@ -43,9 +43,9 @@ export class ConfirmModal extends Modal {
 					.onClick(() => {
 						this.close();
 						if (this.onSubmit) {
-							this.onSubmit();
+							void this.onSubmit();
 						}
-					})
+					}),
 			);
 	}
 }
